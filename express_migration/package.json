@@ -1,0 +1,26 @@
+{
+    "name": "express_migration",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+        "start": "nodemon server.js",
+        "validate": "nodemon validation.js",
+        "viewengine": "nodemon view_engine.js",
+        "singlefile": "nodemon single_file.js",
+        "staticfiles": "nodemon static_files.js"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "Unlicense",
+    "dependencies": {
+        "@hapi/hapi": "^21.3.2",
+        "@hapi/inert": "^7.1.0",
+        "@hapi/vision": "^7.0.1",
+        "joi": "^17.9.2",
+        "pug": "^3.0.2"
+    },
+    "devDependencies": {
+        "nodemon": "^2.0.22"
+    }
+}
