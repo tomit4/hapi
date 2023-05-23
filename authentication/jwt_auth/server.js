@@ -1,5 +1,3 @@
-// TODO: Complete this, look at note on line 98
-
 'use strict'
 const Hapi = require('@hapi/hapi')
 const Bcrypt = require('bcrypt')
@@ -32,14 +30,16 @@ const init = async () => {
     await server.register(require('@hapi/inert'))
 
     server.auth.strategy('my_jwt_strategy', 'jwt', {
-        keys: 'some_shared_secret',
+        keys: {
+            key: 'some_shared_secret',
+            algorithms: ['HS256'],
+        },
         verify: {
             aud: 'urn:audience:test',
             iss: 'urn:issuer:test',
             sub: false,
             nbf: true,
             exp: true,
-            // maxAgeSec: 14400, // 4 hours
             maxAgeSec: 60, // 1 minute
             timeSkewSec: 15,
         },
