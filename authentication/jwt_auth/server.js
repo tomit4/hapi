@@ -78,6 +78,7 @@ const init = async () => {
             method: 'GET',
             path: '/',
             handler: async (request, h) => {
+                console.log('headers :=>', request.headers)
                 if (request.state.token) {
                     const token = request.state.token
                     const validationResult = server.methods.jwt.decode(token)
@@ -120,7 +121,12 @@ const init = async () => {
                     return h.redirect('/login')
                 }
 
-                const token = server.methods.jwt.sign({ id: account.id })
+                const token = server.methods.jwt.sign(
+                    { id: account.id },
+                    'some_shared_secret',
+                    { expiresIn: 15 },
+                )
+                // console.log('token :=>', token)
                 return h.redirect('/').state('token', token, {
                     isSecure: true,
                     isHttpOnly: true,
