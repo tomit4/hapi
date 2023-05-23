@@ -4,14 +4,23 @@ const Bcrypt = require('bcrypt')
 const Path = require('path')
 const Jwt = require('@hapi/jwt')
 
+const generatePasswd = async (passwd, salt) => {
+    return await Bcrypt.hash(passwd, salt)
+}
+
 // Dummy database
 const users = [
     {
         username: 'john',
-        password:
-            '$2a$10$iqJSHD.BGr0E2IxQwYgJmeP3NvhPrXAeLSaGCj6IR/XU5QtjVu5Tm', // 'secret'
+        password: '',
         name: 'John Doe',
         id: '2133d32a',
+    },
+    {
+        username: 'brian',
+        password: '',
+        name: 'Brian Brianson',
+        id: '1715a32e',
     },
 ]
 
@@ -24,6 +33,11 @@ const init = async () => {
                 relativeTo: Path.join(__dirname, 'public'),
             },
         },
+    })
+
+    const unhashedPasswords = ['secret', 'mysecret']
+    users.forEach(async (user, i) => {
+        user.password = await generatePasswd(unhashedPasswords[i], 10)
     })
 
     await server.register(Jwt)
@@ -63,11 +77,23 @@ const init = async () => {
         {
             method: 'GET',
             path: '/',
-            handler: (request, h) => {
-                return '<h1>Welcome to the restricted home page</h1>'
+            handler: async (request, h) => {
+                if (request.state.token) {
+                    const token = request.state.token
+                    const validationResult = server.methods.jwt.decode(token)
+
+                    const payloadId = validationResult.decoded.payload.id
+                    const account = users.find(user => user.id === payloadId)
+                    if (validationResult && account) {
+                        return `<h1>Welcome to the restricted home page, here's your user info!</h1>\n
+                            <p>${JSON.stringify(account)}</p>`
+                    }
+                } else {
+                    return h.redirect('/login')
+                }
             },
             options: {
-                auth: 'my_jwt_strategy',
+                auth: false,
             },
         },
         {
@@ -95,13 +121,10 @@ const init = async () => {
                 }
 
                 const token = server.methods.jwt.sign({ id: account.id })
-                // stores token as cookie to be read later...
-                // currently redirecting still gives 401 error as / is not yet set up properly...
-                // return to this next
-                return h.redirect('/').state('token', token)
-
-                // simply reads token back to you
-                // return h.response({ token }).code(200)
+                return h.redirect('/').state('token', token, {
+                    isSecure: true,
+                    isHttpOnly: true,
+                })
             },
             options: {
                 auth: {
